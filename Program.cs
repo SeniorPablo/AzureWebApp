@@ -1,7 +1,23 @@
+using Azure.Identity;
+using AzureWebApp.Data;
+using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+var dbConnection = builder.Configuration["AzureSqlDatabaseConnection"];
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(dbConnection, sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure();
+    }));
+
 builder.Services.AddRazorPages();
+builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
+{
+    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+});
 
 var app = builder.Build();
 
